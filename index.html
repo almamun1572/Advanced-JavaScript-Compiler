@@ -4,116 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced JavaScript Compiler</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f5f5f5;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 20px;
-        }
-        h1 {
-            color: #333;
+            text-align: center;
         }
         #editor {
-            width: 80%;
-            height: 300px;
-            font-size: 1.1em;
-            padding: 10px;
+            height: 400px;
+            width: 90%;
+            margin: 20px auto;
             border: 1px solid #ddd;
             border-radius: 5px;
-            background-color: #fff;
-            margin-top: 10px;
-            resize: vertical;
-            white-space: pre-wrap;
-            overflow-wrap: break-word;
         }
-        #buttons {
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
             margin-top: 15px;
         }
-        button {
+        .btn {
             padding: 10px 20px;
-            margin: 5px;
             font-size: 1em;
-            cursor: pointer;
-            border-radius: 5px;
-            border: none;
             color: white;
-        }
-        .run { background-color: #28a745; }
-        .clear { background-color: #dc3545; }
-        .format { background-color: #007bff; }
-        .undo, .redo { background-color: #ffc107; }
-        #output {
-            width: 80%;
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
+            background-color: #007bff;
+            border: none;
             border-radius: 5px;
-            background-color: #f7f7f7;
-            color: #333;
-            white-space: pre-wrap;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <h1>Advanced JavaScript Compiler</h1>
-    
-    <div id="editor" contenteditable="true">// Write your JavaScript code here</div>
 
-    <div id="buttons">
-        <button class="run" onclick="runJavaScriptCode()">Run Code</button>
-        <button class="clear" onclick="clearEditor()">Clear Editor</button>
-        <button class="format" onclick="formatCode()">Format Code</button>
-        <button class="undo" onclick="document.execCommand('undo')">Undo</button>
-        <button class="redo" onclick="document.execCommand('redo')">Redo</button>
-    </div>
+<h1>Advanced JavaScript Compiler</h1>
 
-    <div id="output">Output will appear here</div>
+<div id="editor"></div>
 
-    <script>
-        let worker;
+<div class="button-container">
+    <button class="btn" onclick="runCode()">Run Code</button>
+    <button class="btn" onclick="clearEditor()">Clear Editor</button>
+    <button class="btn" onclick="formatCode()">Format Code</button>
+</div>
 
-        function runJavaScriptCode() {
-            const code = document.getElementById("editor").innerText;
-            const outputElement = document.getElementById("output");
-            outputElement.innerText = ""; // Clear previous output
-            
-            if (worker) {
-                worker.terminate(); // Terminate any previous worker
-            }
+<div id="output"></div>
 
-            // Create a new Web Worker
-            worker = new Worker("worker.js");
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
 
-            worker.onmessage = function(event) {
-                outputElement.innerText = event.data;
-            };
+<script>
+    const editor = CodeMirror(document.getElementById("editor"), {
+        mode: "javascript",
+        lineNumbers: true,
+        theme: "default",
+        tabSize: 4
+    });
 
-            worker.onerror = function(error) {
-                outputElement.innerText = `Error: ${error.message}`;
-            };
-
-            // Send the code to the worker
-            worker.postMessage(code);
+    function runCode() {
+        const code = editor.getValue();
+        try {
+            const output = eval(code);
+            document.getElementById("output").textContent = output !== undefined ? output : "Code executed successfully!";
+        } catch (error) {
+            document.getElementById("output").textContent = "Error: " + error.message;
         }
+    }
 
-        function clearEditor() {
-            document.getElementById("editor").innerText = "";
-            document.getElementById("output").innerText = "Output will appear here";
-        }
+    function clearEditor() {
+        editor.setValue("");
+        document.getElementById("output").textContent = "";
+    }
 
-        function formatCode() {
-            const editor = document.getElementById("editor");
-            try {
-                const formattedCode = js_beautify(editor.innerText);
-                editor.innerText = formattedCode;
-            } catch (error) {
-                document.getElementById("output").innerText = `Formatting error: ${error.message}`;
-            }
-        }
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.0/beautify.min.js"></script>
+    function formatCode() {
+        editor.setValue(js_beautify(editor.getValue(), { indent_size: 4 }));
+    }
+</script>
+
 </body>
 </html>
