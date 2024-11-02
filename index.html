@@ -1,5 +1,123 @@
-let count = 1;
-while (count <= 5) {
-    console.log("গণনা: " + count);
-    count++;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced JavaScript Compiler</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        #editor {
+            width: 80%;
+            height: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        #buttons {
+            margin-top: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+            color: white;
+        }
+        .run { background-color: #28a745; }
+        .clear { background-color: #dc3545; }
+        .format { background-color: #007bff; }
+        .undo, .redo { background-color: #ffc107; }
+        #output {
+            width: 80%;
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f7f7f7;
+            color: #333;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Advanced JavaScript Compiler</h1>
+
+    <div id="editor"></div>
+
+    <div id="buttons">
+        <button class="run" onclick="runJavaScriptCode()">Run Code</button>
+        <button class="clear" onclick="clearEditor()">Clear Editor</button>
+        <button class="format" onclick="formatCode()">Format Code</button>
+        <button class="undo" onclick="editor.undo()">Undo</button>
+        <button class="redo" onclick="editor.redo()">Redo</button>
+    </div>
+
+    <div id="output">Output will appear here</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.0/beautify.min.js"></script>
+
+    <script>
+        // Initialize CodeMirror editor
+        const editor = CodeMirror(document.getElementById("editor"), {
+            lineNumbers: true,
+            mode: "javascript",
+            theme: "default",
+            tabSize: 2,
+            lineWrapping: true
+        });
+
+        // Load saved code if available
+        const savedCode = localStorage.getItem("savedCode");
+        if (savedCode) {
+            editor.setValue(savedCode);
+        }
+
+        // Auto-save code in localStorage
+        editor.on("change", () => {
+            localStorage.setItem("savedCode", editor.getValue());
+        });
+
+        // Function to run JavaScript code
+        function runJavaScriptCode() {
+            const code = editor.getValue();
+            const outputElement = document.getElementById("output");
+            outputElement.innerText = ""; // Clear previous output
+
+            try {
+                const result = eval(code);
+                outputElement.innerText = result !== undefined ? result : "No output";
+            } catch (error) {
+                outputElement.innerText = `Error: ${error.message}`;
+            }
+        }
+
+        // Function to clear editor
+        function clearEditor() {
+            editor.setValue("");
+            document.getElementById("output").innerText = "Output will appear here";
+            localStorage.removeItem("savedCode");
+        }
+
+        // Function to format code
+        function formatCode() {
+            const formattedCode = js_beautify(editor.getValue());
+            editor.setValue(formattedCode);
+        }
+    </script>
+</body>
+</html>
